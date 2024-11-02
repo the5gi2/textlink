@@ -62,9 +62,8 @@
         const result = await response.json();
 
         if (response.ok) {
-          alert(result.message);
-          form.reset();
-          document.getElementById('language').value = ''; // Reset to auto-detect
+          // Redirect to the view page upon successful sharing
+          window.location.href = '/view';
         } else {
           alert(result.message);
         }

@@ -21,7 +21,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Store shared code and language
 let sharedData = {
   text: '',
-  language: 'javascript' // Default language
+  language: '' // Leave empty for autodetection
 };
 
 // Create HTTP server
@@ -51,8 +51,8 @@ app.post('/share', (req, res) => {
     return res.status(400).json({ message: 'Invalid data format. "text" is required.' });
   }
 
-  // If language is provided, use it; otherwise, leave it undefined for autodetection
-  sharedData = { text, language };
+  // If language is provided, use it; otherwise, leave it empty for autodetection
+  sharedData = { text, language: language || '' };
 
   // Broadcast the updated data to all connected clients
   io.emit('updateData', sharedData);

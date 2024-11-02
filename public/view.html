@@ -37,7 +37,7 @@
 
     // Listen for updates
     socket.on('updateData', (data) => {
-      if (data.text && data.language) {
+      if (data.text) {
         const codeElement = document.getElementById('sharedText').querySelector('code');
         codeElement.textContent = data.text;
         hljs.highlightElement(codeElement);
@@ -51,7 +51,7 @@
       try {
         const response = await fetch('/api/data');
         const data = await response.json();
-        if (data.text && data.language) {
+        if (data.text) {
           const codeElement = document.getElementById('sharedText').querySelector('code');
           codeElement.textContent = data.text;
           hljs.highlightElement(codeElement);
