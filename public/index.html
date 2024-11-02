@@ -3,60 +3,142 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Text Sharer - Share Code</title>
+  <title>Text Sharer - Share Content</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensures responsiveness -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <h1>Text Sharer</h1>
-    <form id="shareForm">
-      <label for="language">Select Language (Optional):</label>
-      <select id="language" name="language">
-        <option value="" selected>Auto-detect Language</option>
-        <option value="javascript">JavaScript</option>
-        <option value="python">Python</option>
-        <option value="java">Java</option>
-        <option value="cpp">C++</option>
-        <option value="csharp">C#</option>
-        <option value="ruby">Ruby</option>
-        <option value="php">PHP</option>
-        <option value="typescript">TypeScript</option>
-        <option value="go">Go</option>
-        <option value="swift">Swift</option>
-        <!-- HTML option removed as autodetection suffices -->
+    
+    <!-- Dark Mode Toggle -->
+    <div class="dark-mode-toggle">
+      <label for="darkModeSwitch">Dark Mode:</label>
+      <input type="checkbox" id="darkModeSwitch">
+    </div>
+
+    <form id="shareForm" enctype="multipart/form-data">
+      <label for="contentType">Select Content Type:</label>
+      <select id="contentType" name="contentType">
+        <option value="text">Text/Code</option>
+        <option value="file">Image/File</option>
+        <option value="both">Both</option>
       </select>
 
-      <label for="sharedText">Enter Code to Share:</label>
-      <textarea id="sharedText" name="sharedText" placeholder="Type or paste your code here..." required></textarea>
+      <div id="textSection">
+        <label for="language">Select Language (Optional):</label>
+        <select id="language" name="language">
+          <option value="" selected>Auto-detect Language</option>
+          <option value="javascript">JavaScript</option>
+          <option value="python">Python</option>
+          <option value="java">Java</option>
+          <option value="cpp">C++</option>
+          <option value="csharp">C#</option>
+          <option value="ruby">Ruby</option>
+          <option value="php">PHP</option>
+          <option value="typescript">TypeScript</option>
+          <option value="go">Go</option>
+          <option value="swift">Swift</option>
+          <!-- HTML option removed as autodetection suffices -->
+        </select>
+
+        <label for="sharedText">Enter Text/Code to Share:</label>
+        <textarea id="sharedText" name="text" placeholder="Type or paste your text/code here..."></textarea>
+      </div>
+
+      <div id="fileSection">
+        <label for="files">Upload Images/Files:</label>
+        <input type="file" id="files" name="files" multiple>
+      </div>
       
-      <button type="submit">Share Code</button>
+      <button type="submit">Share</button>
     </form>
-    <a href="/view" class="nav-link">View Shared Code</a>
+    <a href="/view" class="nav-link">View Shared Content</a>
   </div>
 
   <script>
+    const contentType = document.getElementById('contentType');
+    const textSection = document.getElementById('textSection');
+    const fileSection = document.getElementById('fileSection');
+
+    contentType.addEventListener('change', () => {
+      const value = contentType.value;
+      if (value === 'text') {
+        textSection.style.display = 'block';
+        fileSection.style.display = 'none';
+      } else if (value === 'file') {
+        textSection.style.display = 'none';
+        fileSection.style.display = 'block';
+      } else { // both
+        textSection.style.display = 'block';
+        fileSection.style.display = 'block';
+      }
+    });
+
+    // Initialize display based on default selection
+    window.addEventListener('DOMContentLoaded', () => {
+      const event = new Event('change');
+      contentType.dispatchEvent(event);
+
+      // Initialize dark mode based on localStorage
+      const darkModeSwitch = document.getElementById('darkModeSwitch');
+      const darkMode = localStorage.getItem('darkMode') === 'enabled';
+      if (darkMode) {
+        document.body.classList.add('dark-mode');
+        darkModeSwitch.checked = true;
+      }
+
+      darkModeSwitch.addEventListener('change', () => {
+        if (darkModeSwitch.checked) {
+          document.body.classList.add('dark-mode');
+          localStorage.setItem('darkMode', 'enabled');
+        } else {
+          document.body.classList.remove('dark-mode');
+          localStorage.setItem('darkMode', 'disabled');
+        }
+      });
+    });
+
     const form = document.getElementById('shareForm');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      const selectedContentType = contentType.value;
       const language = document.getElementById('language').value;
       const text = document.getElementById('sharedText').value;
+      const files = document.getElementById('files').files;
 
-      if (!text) {
-        alert('Please enter some code.');
+      if (selectedContentType === 'text' && !text) {
+        alert('Please enter some text/code.');
         return;
       }
 
+      if (selectedContentType === 'file' && files.length === 0) {
+        alert('Please select at least one file to upload.');
+        return;
+      }
+
+      // Create FormData object
+      const formData = new FormData();
+
+      if (selectedContentType === 'text' || selectedContentType === 'both') {
+        formData.append('text', text);
+        if (language) {
+          formData.append('language', language);
+        }
+      }
+
+      if (selectedContentType === 'file' || selectedContentType === 'both') {
+        for (let i = 0; i < files.length; i++) {
+          formData.append('files', files[i]);
+        }
+      }
+
       try {
-        const payload = language ? { text, language } : { text }; // Send language only if selected
         const response = await fetch('/share', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(payload)
+          body: formData
         });
 
         const result = await response.json();
@@ -68,8 +150,8 @@
           alert(result.message);
         }
       } catch (error) {
-        console.error('Error sharing code:', error);
-        alert('An error occurred while sharing the code.');
+        console.error('Error sharing content:', error);
+        alert('An error occurred while sharing the content.');
       }
     });
   </script>

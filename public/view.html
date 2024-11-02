@@ -3,20 +3,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Text Sharer - View Code</title>
+  <title>Text Sharer - View Content</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensures responsiveness -->
   <link rel="stylesheet" href="style.css">
   <!-- Highlight.js CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/monokai-sublime.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
   <!-- Highlight.js JavaScript with all languages included -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
 </head>
 <body>
   <div class="container view-container">
-    <h1>Shared Code</h1>
-    <pre class="shared-text" id="sharedText"><code>Loading...</code></pre>
+    <h1>Shared Content</h1>
+    
+    <!-- Dark Mode Toggle -->
+    <div class="dark-mode-toggle">
+      <label for="darkModeSwitch">Dark Mode:</label>
+      <input type="checkbox" id="darkModeSwitch">
+    </div>
+
+    <!-- Search Bar -->
+    <input type="text" id="searchBar" placeholder="Search shared content..." />
+
+    <div id="sharedContentContainer">
+      <p>No content has been shared yet.</p>
+    </div>
+
     <a href="/" class="nav-link">Go Back Home</a>
   </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"></div>
 
   <!-- Socket.io Client Script -->
   <script src="/socket.io/socket.io.js"></script>
@@ -25,18 +41,8 @@
 
     // Listen for updates
     socket.on('updateData', (data) => {
-      if (data.text) {
-        const codeElement = document.getElementById('sharedText').querySelector('code');
-        if (data.language) {
-          codeElement.className = `language-${data.language}`;
-        } else {
-          codeElement.className = ''; // Remove any previous language class
-        }
-        codeElement.textContent = data.text;
-        hljs.highlightElement(codeElement);
-      } else {
-        document.getElementById('sharedText').textContent = 'No code has been shared yet.';
-      }
+      displaySharedContent(data);
+      showToast('New content shared!');
     });
 
     // Initial fetch
@@ -44,23 +50,150 @@
       try {
         const response = await fetch('/api/data');
         const data = await response.json();
-        if (data.text) {
-          const codeElement = document.getElementById('sharedText').querySelector('code');
-          if (data.language) {
-            codeElement.className = `language-${data.language}`;
-          } else {
-            codeElement.className = ''; // Remove any previous language class
-          }
-          codeElement.textContent = data.text;
-          hljs.highlightElement(codeElement);
-        } else {
-          document.getElementById('sharedText').textContent = 'No code has been shared yet.';
-        }
+        displaySharedContent(data);
       } catch (error) {
         console.error('Error fetching initial data:', error);
-        document.getElementById('sharedText').textContent = 'Error loading shared code.';
+        document.getElementById('sharedContentContainer').innerHTML = '<p>Error loading shared content.</p>';
       }
     }
+
+    function displaySharedContent(data) {
+      const container = document.getElementById('sharedContentContainer');
+      container.innerHTML = ''; // Clear existing content
+
+      if (data.length === 0) {
+        container.innerHTML = '<p>No content has been shared yet.</p>';
+        return;
+      }
+
+      data.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'shared-item';
+        itemDiv.setAttribute('data-id', item.id);
+
+        const timestamp = new Date(item.timestamp).toLocaleString();
+        const timeP = document.createElement('p');
+        timeP.className = 'timestamp';
+        timeP.textContent = `Shared at: ${timestamp}`;
+        itemDiv.appendChild(timeP);
+
+        // Delete Button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.addEventListener('click', () => deleteItem(item.id));
+        itemDiv.appendChild(deleteBtn);
+
+        if (item.type === 'text') {
+          const pre = document.createElement('pre');
+          const code = document.createElement('code');
+          if (item.language) {
+            code.className = `language-${item.language}`;
+          }
+          code.textContent = item.content;
+          pre.appendChild(code);
+          
+          // Copy Button
+          const copyBtn = document.createElement('button');
+          copyBtn.className = 'copy-btn';
+          copyBtn.textContent = 'Copy';
+          copyBtn.addEventListener('click', () => copyToClipboard(code.textContent));
+          pre.appendChild(copyBtn);
+
+          itemDiv.appendChild(pre);
+        } else if (item.type === 'image') {
+          const img = document.createElement('img');
+          img.src = item.content;
+          img.alt = item.filename || 'Shared Image';
+          img.className = 'shared-image';
+          itemDiv.appendChild(img);
+        } else if (item.type === 'file') {
+          const fileLink = document.createElement('a');
+          fileLink.href = item.content;
+          fileLink.download = item.filename || 'Shared File';
+          fileLink.textContent = `Download: ${item.filename || 'File'}`;
+          fileLink.className = 'file-link';
+          itemDiv.appendChild(fileLink);
+        }
+
+        container.appendChild(itemDiv);
+      });
+
+      // Initialize Highlight.js
+      hljs.highlightAll();
+    }
+
+    function deleteItem(id) {
+      fetch(`/delete/${id}`, {
+        method: 'DELETE'
+      })
+      .then(response => response.json())
+      .then(result => {
+        if (result.message) {
+          showToast(result.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error deleting item:', error);
+        showToast('Error deleting item.');
+      });
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Code copied to clipboard.');
+      }, () => {
+        showToast('Failed to copy code.');
+      });
+    }
+
+    // Search functionality
+    const searchBar = document.getElementById('searchBar');
+    searchBar.addEventListener('input', () => {
+      const query = searchBar.value.toLowerCase();
+      const items = document.querySelectorAll('.shared-item');
+
+      items.forEach(item => {
+        const content = item.textContent.toLowerCase();
+        if (content.includes(query)) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+
+    // Toast Notification
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast show';
+      setTimeout(() => {
+        toast.className = 'toast';
+      }, 3000);
+    }
+
+    // Dark Mode Toggle
+    const darkModeSwitch = document.getElementById('darkModeSwitch');
+
+    darkModeSwitch.addEventListener('change', () => {
+      if (darkModeSwitch.checked) {
+        document.body.classList.add('dark-mode');
+        localStorage.setItem('darkMode', 'enabled');
+      } else {
+        document.body.classList.remove('dark-mode');
+        localStorage.setItem('darkMode', 'disabled');
+      }
+    });
+
+    // Initialize dark mode based on localStorage
+    window.addEventListener('DOMContentLoaded', () => {
+      const darkMode = localStorage.getItem('darkMode') === 'enabled';
+      if (darkMode) {
+        document.body.classList.add('dark-mode');
+        darkModeSwitch.checked = true;
+      }
+    });
 
     window.onload = fetchInitialData;
   </script>
