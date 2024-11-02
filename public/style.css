@@ -1,6 +1,6 @@
 /* public/style.css */
 
-/* Reset some default styles */
+/* Reset Default Styles */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -23,11 +23,12 @@ body.dark-mode {
 /* Navbar Styles */
 .navbar {
   display: flex;
-  justify-content: space-between;
+  justify-content: center; /* Center the brand text */
   align-items: center;
   background-color: #3498db;
   padding: 15px 30px;
   color: #fff;
+  position: relative;
   transition: background-color 0.3s;
 }
 
@@ -38,17 +39,91 @@ body.dark-mode .navbar {
 .navbar-brand {
   font-size: 1.8em;
   font-weight: 700;
+  text-align: center;
+  flex: 1;
 }
 
-.navbar-toggle label {
-  margin-right: 10px;
-  font-size: 1em;
+/* Dark Mode Toggle Switch */
+.navbar-toggle {
+  position: absolute;
+  right: 30px; /* Position the toggle on the right */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column; /* Stack label and toggle vertically */
 }
 
-.navbar-toggle input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
+/* Toggle Switch Label */
+.toggle-label {
+  margin-bottom: 5px;
+  font-size: 0.9em;
+  color: #fff;
+}
+
+/* Toggle Switch Styling */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-label {
+  position: absolute;
   cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  border-radius: 34px;
+  transition: background-color 0.4s;
+}
+
+.switch-label::before {
+  position: absolute;
+  content: "\f185"; /* Font Awesome sun icon */
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  color: #f39c12;
+  opacity: 1;
+  transition: opacity 0.4s;
+}
+
+.switch-label::after {
+  content: "\f186"; /* Font Awesome moon icon */
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  color: #f1c40f;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.switch input:checked + .switch-label {
+  background-color: #1abc9c;
+}
+
+.switch input:checked + .switch-label::before {
+  opacity: 0;
+}
+
+.switch input:checked + .switch-label::after {
+  opacity: 1;
 }
 
 /* Container */
@@ -56,7 +131,7 @@ body.dark-mode .navbar {
   width: 90%;
   max-width: 1200px;
   margin: 40px auto;
-  background-color: #fff;
+  background-color: #ffffff; /* Set to #fff in light mode */
   padding: 40px 60px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-radius: 12px;
@@ -82,15 +157,15 @@ label {
 
 select, textarea, input[type="file"] {
   padding: 14px;
-  font-size: 1em;
-  border: none; /* Removed border */
+  font-size: 1em; /* Reduced font size */
+  border: none;
   outline: none;
-  resize: none;
+  resize: vertical;
   border-radius: 6px;
   margin-bottom: 20px;
-  transition: background-color 0.3s, border-color 0.3s;
-  background-color: #f9f9f9; /* Light background for better text visibility */
-  color: #333; /* Brighter text color */
+  transition: background-color 0.3s, color 0.3s;
+  background-color: #f9f9f9;
+  color: #333;
 }
 
 body.dark-mode select,
@@ -100,16 +175,21 @@ body.dark-mode input[type="file"] {
   color: #d2dae2;
 }
 
-textarea {
-  min-height: 250px;
-  min-width: 100%; /* Ensures the textarea is larger */
-  font-family: 'Courier New', Courier, monospace;
-  background-color: #f9f9f9;
-  color: #333;
+textarea::placeholder {
+  color: #a5a5a5;
 }
 
 body.dark-mode textarea::placeholder {
-  color: #a5a5a5
+  color: #a5a5a5;
+}
+
+textarea {
+  min-height: 300px; /* Increased height */
+  width: 100%; /* Ensures full width */
+  font-family: 'Courier New', Courier, monospace; /* Reverted to monospace */
+  background-color: #f9f9f9;
+  color: #333;
+  font-size: 1em; /* Reduced font size */
 }
 
 body.dark-mode textarea {
@@ -119,12 +199,13 @@ body.dark-mode textarea {
 
 input[type="file"] {
   cursor: pointer;
-  display: none; /* Hide the default file input */
+  display: none;
 }
 
 .file-upload-wrapper {
   position: relative;
   display: inline-block;
+  width: 100%; /* Make it full width for better responsiveness */
 }
 
 .file-upload-label {
@@ -137,6 +218,8 @@ input[type="file"] {
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.3s;
+  width: 100%; /* Full width */
+  text-align: center;
 }
 
 .file-upload-label:hover {
@@ -165,6 +248,11 @@ body.dark-mode .file-upload-label:hover {
   object-fit: cover;
   border-radius: 6px;
   border: 1px solid #ccc;
+  transition: transform 0.3s;
+}
+
+.preview-image:hover {
+  transform: scale(1.05);
 }
 
 /* Share Button */
@@ -249,32 +337,34 @@ body.dark-mode .nav-link:hover {
 
 /* Shared Item */
 .shared-item {
-  background-color: #ecf0f1;
+  background-color: #ffffff; /* White background for distinctness */
   padding: 20px;
   border-radius: 8px;
-  position: relative;
   transition: background-color 0.3s, transform 0.3s;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 body.dark-mode .shared-item {
-  background-color: #485460;
+  background-color: #485460; /* Darker background in dark mode */
 }
 
 .shared-item:hover {
   transform: translateY(-5px);
 }
 
+/* Header within Shared Item */
 .shared-item .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
+/* Timestamp */
 .shared-item .timestamp {
-  margin-bottom: 12px;
-  font-size: 0.9em;
+  font-size: 1em; /* Increased font size */
+  margin-bottom: 10px; /* Added more margin bottom */
   color: #7f8c8d;
 }
 
@@ -284,44 +374,47 @@ body.dark-mode .shared-item .timestamp {
 
 /* Text/Code */
 .shared-text {
-  background-color: #2d3436 !important;
-  color: #dfe6e9;
+  background-color: #f0f2f5;
+  color: #333;
   padding: 15px;
   border-radius: 6px;
   white-space: pre-wrap;
   word-wrap: break-word;
   overflow: auto;
-  font-size: 1.1em;
-  position: relative;
+  font-size: 1em; /* Reduced font size */
   transition: background-color 0.3s, color 0.3s;
+  width: 100%;
+  font-family: 'Courier New', Courier, monospace; /* Reverted to monospace */
 }
 
 body.dark-mode .shared-text {
-  background-color: #353b48 !important;
+  background-color: #2d3436;
+  color: #dfe6e9;
 }
 
-.shared-text .copy-btn {
-  align-self: flex-end;
-  margin-top: 10px;
+/* Copy Button */
+.copy-btn {
+  align-self: flex-start; /* Positioned to the left */
+  margin-top: 10px; /* Pushes the button down slightly */
   background-color: #2980b9;
   border: none;
   color: white;
-  padding: 6px 12px;
+  padding: 8px 16px; /* Increased padding for better clickability */
   cursor: pointer;
   border-radius: 4px;
-  font-size: 0.8em;
+  font-size: 0.9em;
   transition: background-color 0.3s;
 }
 
-.shared-text .copy-btn:hover {
+.copy-btn:hover {
   background-color: #1f618d;
 }
 
-body.dark-mode .shared-text .copy-btn {
+body.dark-mode .copy-btn {
   background-color: #1f618d;
 }
 
-body.dark-mode .shared-text .copy-btn:hover {
+body.dark-mode .copy-btn:hover {
   background-color: #154360;
 }
 
@@ -358,14 +451,15 @@ body.dark-mode .shared-text .copy-btn:hover {
   background-color: #e74c3c;
   border: none;
   color: white;
-  padding: 6px 12px;
-  position: relative;
-  top: -5px;
+  padding: 8px 16px; /* Increased padding */
   cursor: pointer;
   border-radius: 4px;
-  font-size: 0.8em;
+  font-size: 0.9em;
   transition: background-color 0.3s;
-  align-self: flex-start;
+  align-self: flex-end; /* Positioned to the right */
+  margin-top: 10px; /* Added margin-top to position higher */
+  position: relative; /* Added position relative */
+  top: -5px; /* Moved up by 5px */
 }
 
 .delete-btn:hover {
@@ -413,11 +507,12 @@ body.dark-mode .toast {
   width: 100%;
   padding: 14px;
   margin-bottom: 25px;
-  border: 2px solid #3498db; /* Enhanced border */
+  border: 2px solid #3498db;
   border-radius: 6px;
   font-size: 1em;
   box-sizing: border-box;
   transition: border-color 0.3s;
+  outline: none;
 }
 
 body.dark-mode #searchBar {
@@ -436,12 +531,17 @@ body.dark-mode #searchBar::placeholder {
 
 /* Highlight.js Overrides */
 .hljs {
-  background: #2d3436 !important;
-  color: #dfe6e9 !important;
+  background: #f0f2f5 !important; /* Light mode background */
+  color: #333 !important;
   padding: 10px !important;
   border-radius: 4px !important;
   overflow: auto !important;
   transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark-mode .hljs {
+  background: #2d3436 !important;
+  color: #dfe6e9 !important;
 }
 
 .hljs-comment,
@@ -512,7 +612,15 @@ body.dark-mode #searchBar::placeholder {
   }
 
   .navbar-toggle {
+    position: static;
     margin-top: 10px;
+    align-items: flex-start;
+  }
+
+  .toggle-label {
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    color: #fff;
   }
 
   .container {
@@ -531,7 +639,7 @@ body.dark-mode #searchBar::placeholder {
 
   select, input[type="file"], #searchBar {
     padding: 12px;
-    font-size: 0.95em;
+    font-size: 1em;
   }
 
   .share-button {
@@ -544,8 +652,8 @@ body.dark-mode #searchBar::placeholder {
   }
 
   .shared-text .copy-btn, .shared-text .delete-btn {
-    font-size: 0.7em;
-    padding: 5px 10px;
+    font-size: 0.9em;
+    padding: 6px 12px;
   }
 }
 
@@ -558,18 +666,14 @@ body.dark-mode #searchBar::placeholder {
     padding: 10px 20px;
   }
 
-  h1 {
-    font-size: 1.5em;
-    margin-bottom: 20px;
-  }
-
   textarea {
     min-height: 150px;
+    font-size: 1.1em; /* Maintain readable font size */
   }
 
   select, input[type="file"], #searchBar {
     padding: 10px;
-    font-size: 0.9em;
+    font-size: 0.95em;
   }
 
   .share-button {
@@ -582,32 +686,15 @@ body.dark-mode #searchBar::placeholder {
   }
 
   .shared-text .copy-btn, .shared-text .delete-btn {
-    font-size: 0.6em;
-    padding: 4px 8px;
+    font-size: 0.8em;
+    padding: 5px 10px;
   }
 }
-
-/* Additional Features Styling */
 
 /* Drag and Drop Area */
 .file-upload-wrapper.dragover .file-upload-label {
   background-color: #1abc9c;
   color: #fff;
-}
-
-/* Enhanced Search Bar */
-#searchBar {
-  border: 2px solid #3498db; /* Enhanced border */
-}
-
-body.dark-mode #searchBar {
-  border-color: #1abc9c;
-}
-
-/* Notifications */
-.toast {
-  font-family: 'Roboto', sans-serif;
-  font-size: 1em;
 }
 
 /* Scrollbar Styling */
@@ -632,41 +719,15 @@ body.dark-mode ::-webkit-scrollbar-track {
   background: #555; 
 }
 
-/* Copy Button Specific Styles */
-.copy-btn {
-  background-color: #2980b9;
-  border: none;
-  color: white;
-  padding: 6px 12px;
-  cursor: pointer;
-  border-radius: 4px;
-  font-size: 0.8em;
-  transition: background-color 0.3s;
-  margin-top: 10px; /* Pushes the button down slightly */
-}
-
-.copy-btn:hover {
-  background-color: #1f618d;
-}
-
-body.dark-mode .copy-btn {
-  background-color: #1f618d;
-}
-
-body.dark-mode .copy-btn:hover {
-  background-color: #154360;
-}
-
 /* Delete Button Alignment */
-
-/* Adjusting Shared Item Layout for Intuitive Display */
-.shared-item {
-  display: flex;
-  flex-direction: column;
+.delete-btn {
+  align-self: flex-end;
+  margin-top: 10px; /* Position higher */
+  position: relative; /* Added position relative */
+  top: -5px; /* Moved up by 5px */
 }
 
 /* Ensure that text/code takes up full width */
 .shared-text {
   width: 100%;
 }
-

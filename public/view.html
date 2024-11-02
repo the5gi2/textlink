@@ -17,10 +17,15 @@
 </head>
 <body>
   <nav class="navbar">
-    <div class="navbar-brand">Text Sharer</div>
+    <div class="navbar-brand">
+      Text Sharer
+    </div>
     <div class="navbar-toggle">
-      <label for="darkModeSwitch">Dark Mode:</label>
-      <input type="checkbox" id="darkModeSwitch">
+      <span class="toggle-label">Dark Mode</span> <!-- Added label -->
+      <label class="switch">
+        <input type="checkbox" id="darkModeSwitch">
+        <span class="switch-label"></span>
+      </label>
     </div>
   </nav>
   
@@ -41,6 +46,8 @@
     const socket = io();
 
     let isInitialLoad = true; // Flag to check if it's the initial load
+
+    const darkModeSwitch = document.getElementById('darkModeSwitch');
 
     // Listen for updates
     socket.on('updateData', (data) => {
@@ -96,19 +103,19 @@
 
         if (item.type === 'text') {
           const pre = document.createElement('pre');
-          pre.className = 'shared-text';
           const code = document.createElement('code');
           code.textContent = item.content;
           pre.appendChild(code);
+          pre.className = 'shared-text';
 
           // Copy Button
           const copyBtn = document.createElement('button');
           copyBtn.className = 'copy-btn';
           copyBtn.innerHTML = '<i class="fa fa-copy"></i> Copy';
-          copyBtn.addEventListener('click', () => copyToClipboard(code.textContent));
-          pre.appendChild(copyBtn);
+          copyBtn.addEventListener('click', () => copyToClipboard(item.content));
 
           itemDiv.appendChild(pre);
+          itemDiv.appendChild(copyBtn);
         } else if (item.type === 'image') {
           const img = document.createElement('img');
           img.src = item.content;
@@ -156,13 +163,13 @@
       try {
         const successful = document.execCommand('copy');
         if (successful) {
-          showToast('Code copied to clipboard.');
+          showToast('Text copied to clipboard.');
         } else {
-          showToast('Failed to copy code.');
+          showToast('Failed to copy text.');
         }
       } catch (err) {
         console.error('Error copying text:', err);
-        showToast('Failed to copy code.');
+        showToast('Failed to copy text.');
       }
       document.body.removeChild(textarea);
     }
@@ -183,7 +190,7 @@
       });
     });
 
-    // Toast Notification
+    // Toast Notification Function
     function showToast(message) {
       const toast = document.getElementById('toast');
       toast.textContent = message;
@@ -193,9 +200,12 @@
       }, 3000);
     }
 
-    // Dark Mode Toggle
-    const darkModeSwitch = document.getElementById('darkModeSwitch');
+    // Initialize Toast (for initial load, no toast)
+    window.addEventListener('DOMContentLoaded', () => {
+      // No toast on initial load
+    });
 
+    // Toggle Dark Mode
     darkModeSwitch.addEventListener('change', () => {
       if (darkModeSwitch.checked) {
         document.body.classList.add('dark-mode');

@@ -13,10 +13,15 @@
 </head>
 <body>
   <nav class="navbar">
-    <div class="navbar-brand">Text Sharer</div>
+    <div class="navbar-brand">
+      Text Sharer
+    </div>
     <div class="navbar-toggle">
-      <label for="darkModeSwitch">Dark Mode:</label>
-      <input type="checkbox" id="darkModeSwitch">
+      <span class="toggle-label">Dark Mode</span> <!-- Added label -->
+      <label class="switch">
+        <input type="checkbox" id="darkModeSwitch">
+        <span class="switch-label"></span>
+      </label>
     </div>
   </nav>
   
@@ -24,22 +29,22 @@
     <form id="shareForm" enctype="multipart/form-data">
       <label for="contentType">Select Content Type:</label>
       <select id="contentType" name="contentType">
-        <option value="text">Text/Code</option>
-        <option value="file">Image/File</option>
+        <option value="text">Text</option>
+        <option value="file">Image</option>
         <option value="both">Both</option>
       </select>
 
       <div id="textSection">
-        <label for="sharedText">Enter Text/Code to Share:</label>
-        <textarea id="sharedText" name="text" placeholder="Type or paste your text/code here..." style="min-width: 100%;"></textarea>
+        <label for="sharedText">Enter Text to Share:</label>
+        <textarea id="sharedText" name="text" placeholder="Type your text here..."></textarea>
       </div>
 
       <div id="fileSection">
-        <label for="files">Upload Images/Files:</label>
+        <label for="files">Upload Images:</label>
         <div class="file-upload-wrapper" id="dragDropArea">
           <input type="file" id="files" name="files" multiple>
           <label for="files" class="file-upload-label">
-            <i class="fa fa-upload"></i> Choose Files
+            <i class="fa fa-upload"></i> Choose Image
           </label>
           <p id="dragDropText">Or drag and drop files here</p>
         </div>
@@ -54,6 +59,9 @@
     <a href="/view" class="nav-link">View Shared Content</a>
   </div>
 
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"></div>
+
   <script>
     const contentType = document.getElementById('contentType');
     const textSection = document.getElementById('textSection');
@@ -64,6 +72,7 @@
     const progressBar = uploadProgress.querySelector('.progress-bar');
     const dragDropArea = document.getElementById('dragDropArea');
     const dragDropText = document.getElementById('dragDropText');
+    const darkModeSwitch = document.getElementById('darkModeSwitch');
 
     contentType.addEventListener('change', () => {
       const value = contentType.value;
@@ -85,22 +94,22 @@
       contentType.dispatchEvent(event);
 
       // Initialize dark mode based on localStorage
-      const darkModeSwitch = document.getElementById('darkModeSwitch');
       const darkMode = localStorage.getItem('darkMode') === 'enabled';
       if (darkMode) {
         document.body.classList.add('dark-mode');
         darkModeSwitch.checked = true;
       }
+    });
 
-      darkModeSwitch.addEventListener('change', () => {
-        if (darkModeSwitch.checked) {
-          document.body.classList.add('dark-mode');
-          localStorage.setItem('darkMode', 'enabled');
-        } else {
-          document.body.classList.remove('dark-mode');
-          localStorage.setItem('darkMode', 'disabled');
-        }
-      });
+    // Toggle Dark Mode
+    darkModeSwitch.addEventListener('change', () => {
+      if (darkModeSwitch.checked) {
+        document.body.classList.add('dark-mode');
+        localStorage.setItem('darkMode', 'enabled');
+      } else {
+        document.body.classList.remove('dark-mode');
+        localStorage.setItem('darkMode', 'disabled');
+      }
     });
 
     // Image Preview Functionality
@@ -177,7 +186,7 @@
       const files = filesInput.files;
 
       if (selectedContentType === 'text' && !text.trim()) {
-        alert('Please enter some text/code.');
+        alert('Please enter some text.');
         return;
       }
 
@@ -219,7 +228,8 @@
             uploadProgress.style.display = 'none';
             progressBar.style.width = '0%';
             // Redirect to view page
-            window.location.href = '/view';
+            showToast("Content Shared! Redirecting in 3s");
+            setTimeout(() => {window.location.href='/view'}, 3000);
           } else {
             const response = JSON.parse(xhr.responseText);
             alert(response.message || 'An error occurred while sharing the content.');
@@ -241,6 +251,21 @@
         uploadProgress.style.display = 'none';
         progressBar.style.width = '0%';
       }
+    });
+
+    // Toast Notification Function
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast show';
+      setTimeout(() => {
+        toast.className = 'toast';
+      }, 3000);
+    }
+
+    // Initialize Toast (for initial load, no toast)
+    window.addEventListener('DOMContentLoaded', () => {
+      // No toast on initial load
     });
   </script>
 </body>
