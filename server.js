@@ -5,9 +5,12 @@ const http = require('http');
 const path = require('path');
 const socketIo = require('socket.io');
 
+// Initialize Express app
 const app = express();
-const port = 8080;
-const hostname = '192.168.50.163'; // Replace with your server's local IP address
+
+// Define port and hostname (Render will override these)
+const port = process.env.PORT || 8080;
+const hostname = process.env.HOST || '0.0.0.0'; // Bind to all interfaces
 
 // Middleware to parse JSON bodies
 app.use(express.json());
