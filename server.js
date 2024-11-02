@@ -6,11 +6,12 @@ const path = require('path');
 const socketIo = require('socket.io');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
 
 // Initialize Express app
 const app = express();
 
-// Define port and hostname (Render will override these)
+// Define port and hostname
 const port = process.env.PORT || 8080;
 const hostname = '0.0.0.0'; // Bind to all interfaces
 
@@ -36,23 +37,22 @@ const fileFilter = (req, file, cb) => {
   if (mimetype && extname) {
     return cb(null, true);
   } else {
-    cb('Error: Images and documents only!');
+    cb(new Error('Only images and documents are allowed!'));
   }
 };
 
 // Initialize multer with limits
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   fileFilter: fileFilter
 });
 
-// Serve static files from 'public' directory and 'uploads' directory
+// Serve static files from 'public' and 'uploads' directories
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Ensure uploads directory exists
-const fs = require('fs');
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)){
     fs.mkdirSync(uploadsDir);
@@ -82,7 +82,7 @@ io.on('connection', (socket) => {
 
 // POST route to share items
 app.post('/share', upload.array('files'), (req, res) => {
-  const { text, language } = req.body;
+  const { text } = req.body;
   const files = req.files;
 
   if (!text && (!files || files.length === 0)) {
@@ -95,10 +95,9 @@ app.post('/share', upload.array('files'), (req, res) => {
       id: uuidv4(),
       type: 'text',
       content: text,
-      language: language || '',
       timestamp: new Date()
     };
-    sharedItems.push(newItem);
+    sharedItems.unshift(newItem); // Add to the beginning for latest first
   }
 
   // Handle file/image sharing
@@ -116,7 +115,7 @@ app.post('/share', upload.array('files'), (req, res) => {
         filename: file.originalname,
         timestamp: new Date()
       };
-      sharedItems.push(newItem);
+      sharedItems.unshift(newItem); // Add to the beginning for latest first
     });
   }
 

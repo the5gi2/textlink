@@ -4,19 +4,23 @@
 <head>
   <meta charset="UTF-8">
   <title>Text Sharer - Share Content</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensures responsiveness -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Text Sharer</h1>
-    
-    <!-- Dark Mode Toggle -->
-    <div class="dark-mode-toggle">
+  <nav class="navbar">
+    <div class="navbar-brand">Text Sharer</div>
+    <div class="navbar-toggle">
       <label for="darkModeSwitch">Dark Mode:</label>
       <input type="checkbox" id="darkModeSwitch">
     </div>
-
+  </nav>
+  
+  <div class="container">
     <form id="shareForm" enctype="multipart/form-data">
       <label for="contentType">Select Content Type:</label>
       <select id="contentType" name="contentType">
@@ -26,32 +30,26 @@
       </select>
 
       <div id="textSection">
-        <label for="language">Select Language (Optional):</label>
-        <select id="language" name="language">
-          <option value="" selected>Auto-detect Language</option>
-          <option value="javascript">JavaScript</option>
-          <option value="python">Python</option>
-          <option value="java">Java</option>
-          <option value="cpp">C++</option>
-          <option value="csharp">C#</option>
-          <option value="ruby">Ruby</option>
-          <option value="php">PHP</option>
-          <option value="typescript">TypeScript</option>
-          <option value="go">Go</option>
-          <option value="swift">Swift</option>
-          <!-- HTML option removed as autodetection suffices -->
-        </select>
-
         <label for="sharedText">Enter Text/Code to Share:</label>
-        <textarea id="sharedText" name="text" placeholder="Type or paste your text/code here..."></textarea>
+        <textarea id="sharedText" name="text" placeholder="Type or paste your text/code here..." style="min-width: 100%;"></textarea>
       </div>
 
       <div id="fileSection">
         <label for="files">Upload Images/Files:</label>
-        <input type="file" id="files" name="files" multiple>
+        <div class="file-upload-wrapper" id="dragDropArea">
+          <input type="file" id="files" name="files" multiple>
+          <label for="files" class="file-upload-label">
+            <i class="fa fa-upload"></i> Choose Files
+          </label>
+          <p id="dragDropText">Or drag and drop files here</p>
+        </div>
+        <div id="imagePreview" class="image-preview"></div>
       </div>
       
-      <button type="submit">Share</button>
+      <button type="submit" class="share-button"><i class="fa fa-share"></i> Share</button>
+      <div id="uploadProgress" class="upload-progress">
+        <div class="progress-bar"></div>
+      </div>
     </form>
     <a href="/view" class="nav-link">View Shared Content</a>
   </div>
@@ -60,6 +58,12 @@
     const contentType = document.getElementById('contentType');
     const textSection = document.getElementById('textSection');
     const fileSection = document.getElementById('fileSection');
+    const filesInput = document.getElementById('files');
+    const imagePreview = document.getElementById('imagePreview');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const progressBar = uploadProgress.querySelector('.progress-bar');
+    const dragDropArea = document.getElementById('dragDropArea');
+    const dragDropText = document.getElementById('dragDropText');
 
     contentType.addEventListener('change', () => {
       const value = contentType.value;
@@ -99,22 +103,85 @@
       });
     });
 
+    // Image Preview Functionality
+    filesInput.addEventListener('change', () => {
+      imagePreview.innerHTML = '';
+      const files = filesInput.files;
+      if (files.length > 0) {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const img = document.createElement('img');
+              img.src = e.target.result;
+              img.alt = file.name;
+              img.classList.add('preview-image');
+              imagePreview.appendChild(img);
+            }
+            reader.readAsDataURL(file);
+          }
+        }
+      }
+    });
+
+    // Drag and Drop Functionality
+    ;['dragenter', 'dragover'].forEach(eventName => {
+      dragDropArea.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragDropArea.classList.add('dragover');
+        dragDropText.textContent = 'Drop files here';
+      }, false);
+    });
+
+    ;['dragleave', 'drop'].forEach(eventName => {
+      dragDropArea.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragDropArea.classList.remove('dragover');
+        dragDropText.textContent = 'Or drag and drop files here';
+      }, false);
+    });
+
+    dragDropArea.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      filesInput.files = files;
+      imagePreview.innerHTML = '';
+      if (files.length > 0) {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const img = document.createElement('img');
+              img.src = e.target.result;
+              img.alt = file.name;
+              img.classList.add('preview-image');
+              imagePreview.appendChild(img);
+            }
+            reader.readAsDataURL(file);
+          }
+        }
+      }
+    });
+
     const form = document.getElementById('shareForm');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const selectedContentType = contentType.value;
-      const language = document.getElementById('language').value;
       const text = document.getElementById('sharedText').value;
-      const files = document.getElementById('files').files;
+      const files = filesInput.files;
 
-      if (selectedContentType === 'text' && !text) {
+      if (selectedContentType === 'text' && !text.trim()) {
         alert('Please enter some text/code.');
         return;
       }
 
-      if (selectedContentType === 'file' && files.length === 0) {
+      if ((selectedContentType === 'file' || selectedContentType === 'both') && files.length === 0) {
         alert('Please select at least one file to upload.');
         return;
       }
@@ -123,10 +190,7 @@
       const formData = new FormData();
 
       if (selectedContentType === 'text' || selectedContentType === 'both') {
-        formData.append('text', text);
-        if (language) {
-          formData.append('language', language);
-        }
+        formData.append('text', text.trim());
       }
 
       if (selectedContentType === 'file' || selectedContentType === 'both') {
@@ -136,22 +200,46 @@
       }
 
       try {
-        const response = await fetch('/share', {
-          method: 'POST',
-          body: formData
-        });
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/share', true);
 
-        const result = await response.json();
+        xhr.upload.onprogress = function(event) {
+          if (event.lengthComputable) {
+            const percentComplete = (event.loaded / event.total) * 100;
+            uploadProgress.style.display = 'block';
+            progressBar.style.width = percentComplete + '%';
+          }
+        };
 
-        if (response.ok) {
-          // Redirect to the view page upon successful sharing
-          window.location.href = '/view';
-        } else {
-          alert(result.message);
-        }
+        xhr.onload = function() {
+          if (xhr.status === 200) {
+            // Reset form
+            form.reset();
+            imagePreview.innerHTML = '';
+            uploadProgress.style.display = 'none';
+            progressBar.style.width = '0%';
+            // Redirect to view page
+            window.location.href = '/view';
+          } else {
+            const response = JSON.parse(xhr.responseText);
+            alert(response.message || 'An error occurred while sharing the content.');
+            uploadProgress.style.display = 'none';
+            progressBar.style.width = '0%';
+          }
+        };
+
+        xhr.onerror = function() {
+          alert('An error occurred while sharing the content.');
+          uploadProgress.style.display = 'none';
+          progressBar.style.width = '0%';
+        };
+
+        xhr.send(formData);
       } catch (error) {
         console.error('Error sharing content:', error);
         alert('An error occurred while sharing the content.');
+        uploadProgress.style.display = 'none';
+        progressBar.style.width = '0%';
       }
     });
   </script>

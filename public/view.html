@@ -4,30 +4,31 @@
 <head>
   <meta charset="UTF-8">
   <title>Text Sharer - View Content</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensures responsiveness -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <!-- Highlight.js CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
   <!-- Highlight.js JavaScript with all languages included -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <div class="container view-container">
-    <h1>Shared Content</h1>
-    
-    <!-- Dark Mode Toggle -->
-    <div class="dark-mode-toggle">
+  <nav class="navbar">
+    <div class="navbar-brand">Text Sharer</div>
+    <div class="navbar-toggle">
       <label for="darkModeSwitch">Dark Mode:</label>
       <input type="checkbox" id="darkModeSwitch">
     </div>
-
-    <!-- Search Bar -->
+  </nav>
+  
+  <div class="container">
     <input type="text" id="searchBar" placeholder="Search shared content..." />
-
-    <div id="sharedContentContainer">
+    <div id="sharedContentContainer" class="shared-content-grid">
       <p>No content has been shared yet.</p>
     </div>
-
     <a href="/" class="nav-link">Go Back Home</a>
   </div>
 
@@ -39,10 +40,15 @@
   <script>
     const socket = io();
 
+    let isInitialLoad = true; // Flag to check if it's the initial load
+
     // Listen for updates
     socket.on('updateData', (data) => {
       displaySharedContent(data);
-      showToast('New content shared!');
+      if (!isInitialLoad) {
+        showToast('New Content Shared!');
+      }
+      isInitialLoad = false;
     });
 
     // Initial fetch
@@ -69,34 +75,36 @@
       data.forEach(item => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'shared-item';
-        itemDiv.setAttribute('data-id', item.id);
 
-        const timestamp = new Date(item.timestamp).toLocaleString();
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'header';
+
         const timeP = document.createElement('p');
         timeP.className = 'timestamp';
+        const timestamp = new Date(item.timestamp).toLocaleString();
         timeP.textContent = `Shared at: ${timestamp}`;
-        itemDiv.appendChild(timeP);
 
-        // Delete Button
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-btn';
-        deleteBtn.textContent = 'Delete';
+        deleteBtn.innerHTML = '<i class="fa fa-trash"></i> Delete';
         deleteBtn.addEventListener('click', () => deleteItem(item.id));
-        itemDiv.appendChild(deleteBtn);
+
+        headerDiv.appendChild(timeP);
+        headerDiv.appendChild(deleteBtn);
+
+        itemDiv.appendChild(headerDiv);
 
         if (item.type === 'text') {
           const pre = document.createElement('pre');
+          pre.className = 'shared-text';
           const code = document.createElement('code');
-          if (item.language) {
-            code.className = `language-${item.language}`;
-          }
           code.textContent = item.content;
           pre.appendChild(code);
-          
+
           // Copy Button
           const copyBtn = document.createElement('button');
           copyBtn.className = 'copy-btn';
-          copyBtn.textContent = 'Copy';
+          copyBtn.innerHTML = '<i class="fa fa-copy"></i> Copy';
           copyBtn.addEventListener('click', () => copyToClipboard(code.textContent));
           pre.appendChild(copyBtn);
 
@@ -111,7 +119,7 @@
           const fileLink = document.createElement('a');
           fileLink.href = item.content;
           fileLink.download = item.filename || 'Shared File';
-          fileLink.textContent = `Download: ${item.filename || 'File'}`;
+          fileLink.innerHTML = `<i class="fa fa-file-download"></i> Download: ${item.filename || 'File'}`;
           fileLink.className = 'file-link';
           itemDiv.appendChild(fileLink);
         }
@@ -140,11 +148,23 @@
     }
 
     function copyToClipboard(text) {
-      navigator.clipboard.writeText(text).then(() => {
-        showToast('Code copied to clipboard.');
-      }, () => {
+      // Create a temporary textarea element
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          showToast('Code copied to clipboard.');
+        } else {
+          showToast('Failed to copy code.');
+        }
+      } catch (err) {
+        console.error('Error copying text:', err);
         showToast('Failed to copy code.');
-      });
+      }
+      document.body.removeChild(textarea);
     }
 
     // Search functionality
@@ -156,7 +176,7 @@
       items.forEach(item => {
         const content = item.textContent.toLowerCase();
         if (content.includes(query)) {
-          item.style.display = 'block';
+          item.style.display = 'flex';
         } else {
           item.style.display = 'none';
         }

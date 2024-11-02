@@ -1,7 +1,7 @@
 {
   "name": "text-sharer",
-  "version": "1.0.0",
-  "description": "A real-time code sharing application.",
+  "version": "2.0.0",
+  "description": "An enhanced real-time content sharing application with multiple features.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
