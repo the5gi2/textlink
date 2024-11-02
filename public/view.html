@@ -7,21 +7,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensures responsiveness -->
   <link rel="stylesheet" href="style.css">
   <!-- Highlight.js CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
-  <!-- Highlight.js JavaScript -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/monokai-sublime.min.css">
+  <!-- Highlight.js JavaScript with all languages included -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-  <!-- Include commonly used languages except HTML -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/javascript.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/java.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/cpp.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/csharp.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/ruby.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/php.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/typescript.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/go.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/swift.min.js"></script>
-  <!-- Note: html.min.js has been removed -->
 </head>
 <body>
   <div class="container view-container">
@@ -39,6 +27,11 @@
     socket.on('updateData', (data) => {
       if (data.text) {
         const codeElement = document.getElementById('sharedText').querySelector('code');
+        if (data.language) {
+          codeElement.className = `language-${data.language}`;
+        } else {
+          codeElement.className = ''; // Remove any previous language class
+        }
         codeElement.textContent = data.text;
         hljs.highlightElement(codeElement);
       } else {
@@ -53,6 +46,11 @@
         const data = await response.json();
         if (data.text) {
           const codeElement = document.getElementById('sharedText').querySelector('code');
+          if (data.language) {
+            codeElement.className = `language-${data.language}`;
+          } else {
+            codeElement.className = ''; // Remove any previous language class
+          }
           codeElement.textContent = data.text;
           hljs.highlightElement(codeElement);
         } else {
