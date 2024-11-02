@@ -11,9 +11,9 @@
   <div class="container">
     <h1>Text Sharer</h1>
     <form id="shareForm">
-      <label for="language">Select Language:</label>
-      <select id="language" name="language" required>
-        <option value="" disabled selected>Select Language</option>
+      <label for="language">Select Language (Optional):</label>
+      <select id="language" name="language">
+        <option value="" selected>Auto-detect Language</option>
         <option value="javascript">JavaScript</option>
         <option value="python">Python</option>
         <option value="java">Java</option>
@@ -24,7 +24,7 @@
         <option value="typescript">TypeScript</option>
         <option value="go">Go</option>
         <option value="swift">Swift</option>
-        <option value="html">HTML</option> <!-- Added HTML -->
+        <!-- HTML option removed as autodetection suffices -->
       </select>
 
       <label for="sharedText">Enter Code to Share:</label>
@@ -44,18 +44,19 @@
       const language = document.getElementById('language').value;
       const text = document.getElementById('sharedText').value;
 
-      if (!language || !text) {
-        alert('Please select a language and enter some code.');
+      if (!text) {
+        alert('Please enter some code.');
         return;
       }
 
       try {
+        const payload = language ? { text, language } : { text }; // Send language only if selected
         const response = await fetch('/share', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ text, language })
+          body: JSON.stringify(payload)
         });
 
         const result = await response.json();
@@ -63,6 +64,7 @@
         if (response.ok) {
           alert(result.message);
           form.reset();
+          document.getElementById('language').value = ''; // Reset to auto-detect
         } else {
           alert(result.message);
         }

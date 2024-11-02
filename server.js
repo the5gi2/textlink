@@ -10,7 +10,7 @@ const app = express();
 
 // Define port and hostname (Render will override these)
 const port = process.env.PORT || 8080;
-const hostname = process.env.HOST || '0.0.0.0'; // Bind to all interfaces
+const hostname = '0.0.0.0'; // Bind to all interfaces
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -47,10 +47,11 @@ io.on('connection', (socket) => {
 app.post('/share', (req, res) => {
   const { text, language } = req.body;
 
-  if (typeof text !== 'string' || typeof language !== 'string') {
-    return res.status(400).json({ message: 'Invalid data format.' });
+  if (typeof text !== 'string') {
+    return res.status(400).json({ message: 'Invalid data format. "text" is required.' });
   }
 
+  // If language is provided, use it; otherwise, leave it undefined for autodetection
   sharedData = { text, language };
 
   // Broadcast the updated data to all connected clients

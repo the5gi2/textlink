@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
   <!-- Highlight.js JavaScript -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-  <!-- Include languages -->
+  <!-- Include commonly used languages except HTML -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/javascript.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/java.min.js"></script>
@@ -21,12 +21,12 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/typescript.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/go.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/swift.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/html.min.js"></script> <!-- Added HTML -->
+  <!-- Note: html.min.js has been removed -->
 </head>
 <body>
   <div class="container view-container">
     <h1>Shared Code</h1>
-    <pre class="shared-text" id="sharedText"><code class="language-javascript">Loading...</code></pre>
+    <pre class="shared-text" id="sharedText"><code>Loading...</code></pre>
     <a href="/" class="nav-link">Go Back Home</a>
   </div>
 
@@ -39,7 +39,6 @@
     socket.on('updateData', (data) => {
       if (data.text && data.language) {
         const codeElement = document.getElementById('sharedText').querySelector('code');
-        codeElement.className = `language-${data.language}`;
         codeElement.textContent = data.text;
         hljs.highlightElement(codeElement);
       } else {
@@ -54,7 +53,6 @@
         const data = await response.json();
         if (data.text && data.language) {
           const codeElement = document.getElementById('sharedText').querySelector('code');
-          codeElement.className = `language-${data.language}`;
           codeElement.textContent = data.text;
           hljs.highlightElement(codeElement);
         } else {
@@ -69,9 +67,12 @@
     window.onload = fetchInitialData;
   </script>
 
-  <!-- Initialize Highlight.js -->
+  <!-- Initialize Highlight.js with Autodetection -->
   <script>
     document.addEventListener('DOMContentLoaded', (event) => {
+      hljs.configure({
+        languages: [], // Empty array enables autodetection
+      });
       hljs.highlightAll();
     });
   </script>

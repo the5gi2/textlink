@@ -86,9 +86,10 @@ button:hover {
   border-radius: 6px;
   margin: 20px 0;
   font-family: 'Courier New', Courier, monospace;
-  white-space: pre-wrap; /* Preserve whitespace and line breaks */
+  white-space: pre-wrap; /* Preserve whitespace and line breaks, enable wrapping */
+  word-wrap: break-word; /* Force word wrapping */
   text-align: left;
-  overflow-x: auto;
+  overflow: hidden; /* Hide any remaining overflow, remove scrollbar */
   border: 1px solid #b2bec3;
   font-size: 1.2em; /* Increases text size */
 }
@@ -99,7 +100,7 @@ button:hover {
   color: #dfe6e9 !important; /* Uniform text color */
   padding: 10px !important;
   border-radius: 4px !important;
-  overflow-x: auto !important;
+  overflow: hidden !important; /* Remove horizontal scrollbar */
 }
 
 .hljs-comment,
