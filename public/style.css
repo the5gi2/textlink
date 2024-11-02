@@ -1,0 +1,247 @@
+/* public/style.css */
+
+/* General Styles */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f2f5;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+/* Container */
+.container {
+  width: 90%;
+  max-width: 800px;
+  margin: 60px auto;
+  background-color: #fff;
+  padding: 30px 40px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+/* Heading */
+h1 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 30px;
+}
+
+/* Form Styles */
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  margin-bottom: 10px;
+  font-size: 1.1em;
+}
+
+textarea, select {
+  padding: 12px;
+  font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  resize: vertical;
+  background-color: #f9f9f9;
+  box-sizing: border-box;
+}
+
+textarea {
+  min-height: 150px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+select {
+  cursor: pointer;
+}
+
+/* Button Styles */
+button {
+  padding: 12px;
+  font-size: 1em;
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #2980b9;
+}
+
+/* View Page Styles */
+.view-container {
+  text-align: center;
+}
+
+.view-container .shared-text {
+  background-color: #2d3436 !important; /* Ensures uniform background */
+  color: #dfe6e9;
+  padding: 20px;
+  border-radius: 6px;
+  margin: 20px 0;
+  font-family: 'Courier New', Courier, monospace;
+  white-space: pre-wrap; /* Preserve whitespace and line breaks */
+  text-align: left;
+  overflow-x: auto;
+  border: 1px solid #b2bec3;
+  font-size: 1.2em; /* Increases text size */
+}
+
+/* Highlight.js Overrides */
+.hljs {
+  background: #2d3436 !important; /* Uniform background */
+  color: #dfe6e9 !important; /* Uniform text color */
+  padding: 10px !important;
+  border-radius: 4px !important;
+  overflow-x: auto !important;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #636e72 !important;
+  font-style: italic !important;
+}
+
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+  color: #dfe6e9 !important;
+}
+
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+  color: #fdcb6e !important;
+}
+
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+  color: #00cec9 !important;
+}
+
+.hljs-title,
+.hljs-section {
+  color: #fab1a0 !important;
+  font-weight: bold !important;
+}
+
+.hljs-keyword,
+.hljs-selector-tag {
+  color: #fd79a8 !important;
+}
+
+.hljs-emphasis {
+  font-style: italic !important;
+}
+
+.hljs-strong {
+  font-weight: bold !important;
+}
+
+/* Navigation Link */
+.nav-link {
+  display: inline-block;
+  margin-top: 25px;
+  font-size: 1em;
+  color: #3498db;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #2980b9;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 20px;
+    margin: 40px auto;
+  }
+
+  h1 {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+  }
+
+  textarea {
+    min-height: 120px;
+  }
+
+  select {
+    padding: 10px;
+    font-size: 0.95em;
+  }
+
+  button {
+    padding: 12px;
+    font-size: 1em;
+  }
+
+  .view-container .shared-text {
+    padding: 15px;
+    font-size: 1.1em; /* Slightly smaller on medium screens */
+  }
+
+  .nav-link {
+    font-size: 0.95em;
+    margin-top: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 15px;
+    margin: 20px auto;
+  }
+
+  h1 {
+    font-size: 1.3em;
+    margin-bottom: 15px;
+  }
+
+  textarea {
+    min-height: 100px;
+  }
+
+  select {
+    padding: 8px;
+    font-size: 0.9em;
+  }
+
+  button {
+    padding: 10px;
+    font-size: 0.95em;
+  }
+
+  .view-container .shared-text {
+    padding: 10px;
+    font-size: 1em; /* Larger font on small screens for readability */
+  }
+
+  .nav-link {
+    font-size: 0.9em;
+    margin-top: 15px;
+  }
+}
+
+/* Additional Highlight.js Overrides (Optional) */
+/* If needed, you can further customize Highlight.js styles here */

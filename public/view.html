@@ -1,0 +1,79 @@
+<!-- public/view.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Text Sharer - View Code</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensures responsiveness -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Highlight.js CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+  <!-- Highlight.js JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <!-- Include languages -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/java.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/cpp.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/csharp.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/ruby.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/php.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/typescript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/go.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/swift.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/html.min.js"></script> <!-- Added HTML -->
+</head>
+<body>
+  <div class="container view-container">
+    <h1>Shared Code</h1>
+    <pre class="shared-text" id="sharedText"><code class="language-javascript">Loading...</code></pre>
+    <a href="/" class="nav-link">Go Back Home</a>
+  </div>
+
+  <!-- Socket.io Client Script -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    // Listen for updates
+    socket.on('updateData', (data) => {
+      if (data.text && data.language) {
+        const codeElement = document.getElementById('sharedText').querySelector('code');
+        codeElement.className = `language-${data.language}`;
+        codeElement.textContent = data.text;
+        hljs.highlightElement(codeElement);
+      } else {
+        document.getElementById('sharedText').textContent = 'No code has been shared yet.';
+      }
+    });
+
+    // Initial fetch
+    async function fetchInitialData() {
+      try {
+        const response = await fetch('/api/data');
+        const data = await response.json();
+        if (data.text && data.language) {
+          const codeElement = document.getElementById('sharedText').querySelector('code');
+          codeElement.className = `language-${data.language}`;
+          codeElement.textContent = data.text;
+          hljs.highlightElement(codeElement);
+        } else {
+          document.getElementById('sharedText').textContent = 'No code has been shared yet.';
+        }
+      } catch (error) {
+        console.error('Error fetching initial data:', error);
+        document.getElementById('sharedText').textContent = 'Error loading shared code.';
+      }
+    }
+
+    window.onload = fetchInitialData;
+  </script>
+
+  <!-- Initialize Highlight.js -->
+  <script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+      hljs.highlightAll();
+    });
+  </script>
+</body>
+</html>
