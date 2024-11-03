@@ -31,7 +31,7 @@ const storage = multer.diskStorage({
 
 // File type restrictions
 const fileFilter = (req, file, cb) => {
-
+  const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt|zip|rar/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
   if (extname) {
     return cb(null, true);
@@ -43,7 +43,7 @@ const fileFilter = (req, file, cb) => {
 // Initialize multer with limits
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  limits: { fileSize: 50 * 1024 * 1024 }, // 10MB limit
   fileFilter: fileFilter
 });
 
