@@ -252,7 +252,7 @@ body.dark-mode .file-upload-label:hover {
 }
 
 .preview-image:hover {
-  transform: scale(1.05);
+  transform: scale(0.95);
 }
 
 /* Share Button */
@@ -428,7 +428,7 @@ body.dark-mode .copy-btn:hover {
 }
 
 .shared-image:hover {
-  transform: scale(1.02);
+  transform: scale(0.995);
 }
 
 /* File Link */

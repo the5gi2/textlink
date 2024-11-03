@@ -90,14 +90,12 @@
         timeP.className = 'timestamp';
         const timestamp = new Date(item.timestamp).toLocaleString();
         timeP.textContent = `Shared at: ${timestamp}`;
-
-        const deleteBtn = document.createElement('button');
+        deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-btn';
         deleteBtn.innerHTML = '<i class="fa fa-trash"></i> Delete';
         deleteBtn.addEventListener('click', () => deleteItem(item.id));
-
         headerDiv.appendChild(timeP);
-        headerDiv.appendChild(deleteBtn);
+        if(localStorage.admin=='true'){ headerDiv.appendChild(deleteBtn)};
 
         itemDiv.appendChild(headerDiv);
 
@@ -121,7 +119,13 @@
           img.src = item.content;
           img.alt = item.filename || 'Shared Image';
           img.className = 'shared-image';
+          const fileLink = document.createElement('a');
+          fileLink.href = item.content;
+          fileLink.download = item.filename || 'Shared File';
+          fileLink.innerHTML = `<i class="fa fa-file-download"></i> Download: ${item.filename || 'File'}`;
+          fileLink.className = 'file-link';
           itemDiv.appendChild(img);
+          itemDiv.appendChild(fileLink);
         } else if (item.type === 'file') {
           const fileLink = document.createElement('a');
           fileLink.href = item.content;

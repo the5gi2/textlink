@@ -29,24 +29,24 @@
     <form id="shareForm" enctype="multipart/form-data">
       <label for="contentType">Select Content Type:</label>
       <select id="contentType" name="contentType">
-        <option value="text">Text</option>
-        <option value="file">Image</option>
+        <option value="text">Text/Code</option>
+        <option value="file">File/Image</option>
         <option value="both">Both</option>
       </select>
 
       <div id="textSection">
-        <label for="sharedText">Enter Text to Share:</label>
+        <label for="sharedText">Enter Text/Code to Share:</label>
         <textarea id="sharedText" name="text" placeholder="Type your text here..."></textarea>
       </div>
 
       <div id="fileSection">
-        <label for="files">Upload Images:</label>
+        <label for="files" style="padding-bottom: 30px;">Upload Files/Images: Or drag and drop files here</label>
+        <p id="dragDropText"></p>
         <div class="file-upload-wrapper" id="dragDropArea">
           <input type="file" id="files" name="files" multiple>
           <label for="files" class="file-upload-label">
             <i class="fa fa-upload"></i> Choose Image
           </label>
-          <p id="dragDropText">Or drag and drop files here</p>
         </div>
         <div id="imagePreview" class="image-preview"></div>
       </div>
