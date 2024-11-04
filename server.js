@@ -8,7 +8,7 @@ const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const session = require('express-session');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const bodyParser = require('body-parser');
 const flash = require('connect-flash');
 
