@@ -163,7 +163,13 @@
           img.src = item.content;
           img.alt = item.filename || 'Shared Image';
           img.className = 'shared-image';
+          const fileLink = document.createElement('a');
+          fileLink.href = item.content;
+          fileLink.download = item.filename || 'Shared File';
+          fileLink.innerHTML = `<i class="fa fa-file-download"></i> Download: ${item.filename || 'File'}`;
+          fileLink.className = 'file-link';
           itemDiv.appendChild(img);
+          itemDiv.appendChild(fileLink);
         } else if (item.type === 'file') {
           const fileLink = document.createElement('a');
           fileLink.href = item.content;
