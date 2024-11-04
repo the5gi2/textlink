@@ -60,17 +60,17 @@
       <input type="text" id="tags" name="tags" placeholder="e.g., work, personal">
 
       <!-- Progress Bar -->
-
-      <button type="submit" class="share-button"><i class="fa fa-share"></i> Share</button>
       <div id="uploadProgress" class="upload-progress">
         <div class="progress-bar" id="progressBar"></div>
       </div>
+
+      <button type="submit" class="share-button"><i class="fa fa-share"></i> Share</button>
     </form>
-    <a href="/view.html" class="nav-link">View Shared Content</a>
+    <a href="/view" class="nav-link">View Shared Content</a>
     
     <!-- Authentication Links -->
     <div class="auth-links" id="authLinks">
-      <a href="/login.html" class="auth-link">Login</a> | <a href="/register.html" class="auth-link">Register</a>
+      <a href="/login" class="auth-link">Login</a> | <a href="/register" class="auth-link">Register</a>
     </div>
   </div>
 
@@ -167,7 +167,7 @@
           authLinks.innerHTML = `<a href="/logout" class="auth-link">Logout</a>`;
         } else {
           userInfo.innerHTML = `<p>Logged in as: <strong>Guest</strong></p>`;
-          authLinks.innerHTML = `<a href="/login.html" class="auth-link">Login</a> | <a href="/register.html" class="auth-link">Register</a>`;
+          authLinks.innerHTML = `<a href="/login" class="auth-link">Login</a> | <a href="/register" class="auth-link">Register</a>`;
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -296,7 +296,7 @@
             imagePreview.innerHTML = '';
             // Show toast notification
             showToast("Content Shared! Redirecting in 3s");
-            setTimeout(() => {window.location.href='/view.html'}, 3000);
+            setTimeout(() => {window.location.href='/view'}, 3000);
           } else {
             try {
               const response = JSON.parse(xhr.responseText);

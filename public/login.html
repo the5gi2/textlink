@@ -31,25 +31,25 @@
 
     <form action="/login" method="POST">
       <label for="username">Username:</label>
-      <input type="text" id="username" name="username" placeholder="Enter your username" required>
+      <input type="text" id="username" name="username" required placeholder="Enter your username">
 
       <label for="password">Password:</label>
-      <input type="password" id="password" name="password" placeholder="Enter your password" required>
+      <input type="password" id="password" name="password" required placeholder="Enter your password">
 
       <button type="submit" class="share-button"><i class="fa fa-sign-in-alt"></i> Login</button>
     </form>
-    <p class="auth-link">Don't have an account? <a href="/register.html" class="auth-link">Register here.</a></p>
+    <p>Don't have an account? <a href="/register">Register here</a>.</p>
   </div>
 
   <!-- Toast Notification -->
   <div id="toast" class="toast"></div>
 
   <script>
-    // Dark Mode Toggle
     const darkModeSwitch = document.getElementById('darkModeSwitch');
+    const messageContainer = document.getElementById('messageContainer');
 
-    // Initialize dark mode based on localStorage
     window.addEventListener('DOMContentLoaded', () => {
+      // Initialize dark mode based on localStorage
       const darkMode = localStorage.getItem('darkMode') === 'enabled';
       if (darkMode) {
         document.body.classList.add('dark-mode');
@@ -76,8 +76,6 @@
       const params = new URLSearchParams(window.location.search);
       const errors = params.getAll('errors');
       const success = params.get('success');
-      const messageContainer = document.getElementById('messageContainer');
-
       if (errors.length > 0) {
         errors.forEach(error => {
           const alertDiv = document.createElement('div');
@@ -93,16 +91,6 @@
         alertDiv.textContent = decodeURIComponent(success);
         messageContainer.appendChild(alertDiv);
       }
-    }
-
-    // Toast Notification Function
-    function showToast(message) {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.className = 'toast show';
-      setTimeout(() => {
-        toast.className = 'toast';
-      }, 3000);
     }
   </script>
 </body>

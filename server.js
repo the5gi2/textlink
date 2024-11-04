@@ -8,7 +8,7 @@ const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const session = require('express-session');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs'); // Using bcryptjs for better compatibility
 const bodyParser = require('body-parser');
 const flash = require('connect-flash');
 
@@ -25,7 +25,7 @@ app.use(bodyParser.json());
 
 // Set up session management
 app.use(session({
-  secret: 'ShittersGonnaShit', // Replace with a strong secret in production
+  secret: 'your_secret_key', // Replace with a strong secret in production
   resave: false,
   saveUninitialized: true,
   cookie: { secure: false } // Set to true if using HTTPS
@@ -118,13 +118,13 @@ const storage = multer.diskStorage({
 
 // File type restrictions
 const fileFilter = (req, file, cb) => {
-  cb(null, true);
+  return cb(null, true);
 };
 
 // Initialize Multer with storage, limits, and file filter
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 250 * 1024 * 1024 }, // 50MB limit
+  limits: { fileSize: 1000 * 1024 * 1024 }, // 50MB limit
   fileFilter: fileFilter
 });
 
@@ -158,14 +158,14 @@ app.post('/register', async (req, res) => {
   if (errors.length > 0) {
     // Redirect back with errors as query parameters
     const errorQuery = errors.map(err => encodeURIComponent(err)).join('&');
-    res.redirect(`/register.html?errors=${errorQuery}`);
+    res.redirect(`/register?errors=${errorQuery}`);
   } else {
     const users = loadUsers();
     const userExists = users.find(user => user.username === username);
 
     if (userExists) {
       const error = 'Username is already registered';
-      res.redirect(`/register.html?errors=${encodeURIComponent(error)}`);
+      res.redirect(`/register?errors=${encodeURIComponent(error)}`);
     } else {
       try {
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -178,11 +178,11 @@ app.post('/register', async (req, res) => {
         users.push(newUser);
         saveUsers(users);
         const success = 'You are now registered and can log in';
-        res.redirect(`/login.html?success=${encodeURIComponent(success)}`);
+        res.redirect(`/login?success=${encodeURIComponent(success)}`);
       } catch (err) {
         console.error(err);
         const error = 'Something went wrong. Please try again.';
-        res.redirect(`/register.html?errors=${encodeURIComponent(error)}`);
+        res.redirect(`/register?errors=${encodeURIComponent(error)}`);
       }
     }
   }
@@ -204,14 +204,14 @@ app.post('/login', async (req, res) => {
 
   if (errors.length > 0) {
     const errorQuery = errors.map(err => encodeURIComponent(err)).join('&');
-    res.redirect(`/login.html?errors=${errorQuery}`);
+    res.redirect(`/login?errors=${errorQuery}`);
   } else {
     const users = loadUsers();
     const user = users.find(user => user.username === username);
 
     if (!user) {
       const error = 'That username is not registered';
-      res.redirect(`/login.html?errors=${encodeURIComponent(error)}`);
+      res.redirect(`/login?errors=${encodeURIComponent(error)}`);
     } else {
       try {
         const isMatch = await bcrypt.compare(password, user.password);
@@ -221,15 +221,15 @@ app.post('/login', async (req, res) => {
             username: user.username,
             isAdmin: user.isAdmin
           };
-          res.redirect('/view.html');
+          res.redirect('/view');
         } else {
           const error = 'Password incorrect';
-          res.redirect(`/login.html?errors=${encodeURIComponent(error)}`);
+          res.redirect(`/login?errors=${encodeURIComponent(error)}`);
         }
       } catch (err) {
         console.error(err);
         const error = 'Something went wrong. Please try again.';
-        res.redirect(`/login.html?errors=${encodeURIComponent(error)}`);
+        res.redirect(`/login?errors=${encodeURIComponent(error)}`);
       }
     }
   }
@@ -239,10 +239,10 @@ app.post('/login', async (req, res) => {
 app.get('/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) {
-      return res.redirect('/view.html');
+      return res.redirect('/view');
     }
     res.clearCookie('connect.sid');
-    res.redirect('/login.html?success=' + encodeURIComponent('You are logged out'));
+    res.redirect('/login?success=' + encodeURIComponent('You are logged out'));
   });
 });
 
@@ -354,14 +354,23 @@ app.get('/api/data', (req, res) => {
   res.json(sharedItems);
 });
 
-// Serve the home page
+// Serve the home page on root '/'
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Serve the view page
-app.get('/view.html', (req, res) => {
+// Serve the view page on '/view'
+app.get('/view', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'view.html'));
+});
+
+// Serve other pages without .html extension if needed
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+app.get('/register', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'register.html'));
 });
 
 // Start the server
