@@ -17,7 +17,7 @@
       Text Sharer
     </div>
     <div class="navbar-toggle">
-      <span class="toggle-label">Dark Mode</span> <!-- Added label -->
+      <span class="toggle-label">Dark Mode</span>
       <label class="switch">
         <input type="checkbox" id="darkModeSwitch">
         <span class="switch-label"></span>
@@ -26,6 +26,12 @@
   </nav>
   
   <div class="container">
+    <!-- Error and Success Messages -->
+    <div id="messageContainer"></div>
+
+    <!-- Display Logged-in User -->
+    <div id="userInfo" class="user-info"></div>
+
     <form id="shareForm" enctype="multipart/form-data">
       <label for="contentType">Select Content Type:</label>
       <select id="contentType" name="contentType">
@@ -40,23 +46,32 @@
       </div>
 
       <div id="fileSection">
-        <label for="files" style="padding-bottom: 30px;">Upload Files/Images: Or drag and drop files here</label>
-        <p id="dragDropText"></p>
+        <label for="files">Upload Files/Images:</label>
         <div class="file-upload-wrapper" id="dragDropArea">
           <input type="file" id="files" name="files" multiple>
           <label for="files" class="file-upload-label">
-            <i class="fa fa-upload"></i> Choose Image
+            <i class="fa fa-upload"></i> Choose Files
           </label>
         </div>
         <div id="imagePreview" class="image-preview"></div>
       </div>
       
+      <label for="tags">Tags (comma-separated):</label>
+      <input type="text" id="tags" name="tags" placeholder="e.g., work, personal">
+
+      <!-- Progress Bar -->
+
       <button type="submit" class="share-button"><i class="fa fa-share"></i> Share</button>
       <div id="uploadProgress" class="upload-progress">
-        <div class="progress-bar"></div>
+        <div class="progress-bar" id="progressBar"></div>
       </div>
     </form>
-    <a href="/view" class="nav-link">View Shared Content</a>
+    <a href="/view.html" class="nav-link">View Shared Content</a>
+    
+    <!-- Authentication Links -->
+    <div class="auth-links" id="authLinks">
+      <a href="/login.html" class="auth-link">Login</a> | <a href="/register.html" class="auth-link">Register</a>
+    </div>
   </div>
 
   <!-- Toast Notification -->
@@ -69,10 +84,12 @@
     const filesInput = document.getElementById('files');
     const imagePreview = document.getElementById('imagePreview');
     const uploadProgress = document.getElementById('uploadProgress');
-    const progressBar = uploadProgress.querySelector('.progress-bar');
+    const progressBar = document.getElementById('progressBar');
     const dragDropArea = document.getElementById('dragDropArea');
-    const dragDropText = document.getElementById('dragDropText');
     const darkModeSwitch = document.getElementById('darkModeSwitch');
+    const messageContainer = document.getElementById('messageContainer');
+    const userInfo = document.getElementById('userInfo');
+    const authLinks = document.getElementById('authLinks');
 
     contentType.addEventListener('change', () => {
       const value = contentType.value;
@@ -99,6 +116,12 @@
         document.body.classList.add('dark-mode');
         darkModeSwitch.checked = true;
       }
+
+      // Display messages from query parameters
+      displayMessages();
+
+      // Fetch and display current user info
+      fetchCurrentUser();
     });
 
     // Toggle Dark Mode
@@ -111,6 +134,45 @@
         localStorage.setItem('darkMode', 'disabled');
       }
     });
+
+    // Function to display messages
+    function displayMessages() {
+      const params = new URLSearchParams(window.location.search);
+      const errors = params.getAll('errors');
+      const success = params.get('success');
+      if (errors.length > 0) {
+        errors.forEach(error => {
+          const alertDiv = document.createElement('div');
+          alertDiv.className = 'alert error';
+          alertDiv.textContent = decodeURIComponent(error);
+          messageContainer.appendChild(alertDiv);
+        });
+      }
+
+      if (success) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert success';
+        alertDiv.textContent = decodeURIComponent(success);
+        messageContainer.appendChild(alertDiv);
+      }
+    }
+
+    // Function to fetch and display current user info
+    async function fetchCurrentUser() {
+      try {
+        const response = await fetch('/api/currentUser');
+        const data = await response.json();
+        if (data.isAuthenticated) {
+          userInfo.innerHTML = `<p>Logged in as: <strong>${data.username}</strong></p>`;
+          authLinks.innerHTML = `<a href="/logout" class="auth-link">Logout</a>`;
+        } else {
+          userInfo.innerHTML = `<p>Logged in as: <strong>Guest</strong></p>`;
+          authLinks.innerHTML = `<a href="/login.html" class="auth-link">Login</a> | <a href="/register.html" class="auth-link">Register</a>`;
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    }
 
     // Image Preview Functionality
     filesInput.addEventListener('change', () => {
@@ -140,7 +202,6 @@
         e.preventDefault();
         e.stopPropagation();
         dragDropArea.classList.add('dragover');
-        dragDropText.textContent = 'Drop files here';
       }, false);
     });
 
@@ -149,7 +210,6 @@
         e.preventDefault();
         e.stopPropagation();
         dragDropArea.classList.remove('dragover');
-        dragDropText.textContent = 'Or drag and drop files here';
       }, false);
     });
 
@@ -178,12 +238,13 @@
 
     const form = document.getElementById('shareForm');
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
 
       const selectedContentType = contentType.value;
       const text = document.getElementById('sharedText').value;
       const files = filesInput.files;
+      const tags = document.getElementById('tags').value;
 
       if (selectedContentType === 'text' && !text.trim()) {
         alert('Please enter some text.');
@@ -208,49 +269,52 @@
         }
       }
 
-      try {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', '/share', true);
+      if (tags) {
+        formData.append('tags', tags);
+      }
 
-        xhr.upload.onprogress = function(event) {
-          if (event.lengthComputable) {
-            const percentComplete = (event.loaded / event.total) * 100;
-            uploadProgress.style.display = 'block';
-            progressBar.style.width = percentComplete + '%';
-          }
-        };
+      // Initialize XMLHttpRequest
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/share', true);
 
-        xhr.onload = function() {
+      // Update progress bar
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const percentComplete = (e.loaded / e.total) * 100;
+          progressBar.style.width = percentComplete + '%';
+          uploadProgress.style.display = 'block';
+        }
+      });
+
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+          uploadProgress.style.display = 'none';
+          progressBar.style.width = '0%';
           if (xhr.status === 200) {
             // Reset form
             form.reset();
             imagePreview.innerHTML = '';
-            uploadProgress.style.display = 'none';
-            progressBar.style.width = '0%';
-            // Redirect to view page
+            // Show toast notification
             showToast("Content Shared! Redirecting in 3s");
-            setTimeout(() => {window.location.href='/view'}, 3000);
+            setTimeout(() => {window.location.href='/view.html'}, 3000);
           } else {
-            const response = JSON.parse(xhr.responseText);
-            alert(response.message || 'An error occurred while sharing the content.');
-            uploadProgress.style.display = 'none';
-            progressBar.style.width = '0%';
+            try {
+              const response = JSON.parse(xhr.responseText);
+              alert(response.message || 'An error occurred while sharing the content.');
+            } catch (err) {
+              alert('An error occurred while sharing the content.');
+            }
           }
-        };
+        }
+      };
 
-        xhr.onerror = function() {
-          alert('An error occurred while sharing the content.');
-          uploadProgress.style.display = 'none';
-          progressBar.style.width = '0%';
-        };
-
-        xhr.send(formData);
-      } catch (error) {
-        console.error('Error sharing content:', error);
-        alert('An error occurred while sharing the content.');
+      xhr.onerror = function () {
         uploadProgress.style.display = 'none';
         progressBar.style.width = '0%';
-      }
+        alert('An error occurred during the upload. Please try again.');
+      };
+
+      xhr.send(formData);
     });
 
     // Toast Notification Function

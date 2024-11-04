@@ -21,7 +21,7 @@
       Text Sharer
     </div>
     <div class="navbar-toggle">
-      <span class="toggle-label">Dark Mode</span> <!-- Added label -->
+      <span class="toggle-label">Dark Mode</span>
       <label class="switch">
         <input type="checkbox" id="darkModeSwitch">
         <span class="switch-label"></span>
@@ -30,11 +30,20 @@
   </nav>
   
   <div class="container">
+    <!-- Error and Success Messages -->
+    <div id="messageContainer"></div>
+
+    <!-- Search Bar -->
     <input type="text" id="searchBar" placeholder="Search shared content..." />
     <div id="sharedContentContainer" class="shared-content-grid">
       <p>No content has been shared yet.</p>
     </div>
     <a href="/" class="nav-link">Go Back Home</a>
+    
+    <!-- Authentication Links -->
+    <div class="auth-links" id="authLinks">
+      <!-- Will be populated by JavaScript -->
+    </div>
   </div>
 
   <!-- Toast Notification -->
@@ -46,8 +55,35 @@
     const socket = io();
 
     let isInitialLoad = true; // Flag to check if it's the initial load
+    let currentUser = null; // To store current user data
 
     const darkModeSwitch = document.getElementById('darkModeSwitch');
+    const authLinks = document.getElementById('authLinks');
+
+    // Fetch current user data
+    async function fetchCurrentUser() {
+      try {
+        const response = await fetch('/api/currentUser');
+        const data = await response.json();
+        if (data.isAuthenticated) {
+          currentUser = data;
+          displayAuthLinks(true, data.username);
+        } else {
+          displayAuthLinks(false);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    }
+
+    // Display authentication links based on user status
+    function displayAuthLinks(isAuthenticated, username = '') {
+      if (isAuthenticated) {
+        authLinks.innerHTML = `<span>Welcome, ${username}!</span> | <a href="/logout" class="auth-link">Logout</a>`;
+      } else {
+        authLinks.innerHTML = `<a href="/login.html" class="auth-link">Login</a> | <a href="/register.html" class="auth-link">Register</a>`;
+      }
+    }
 
     // Listen for updates
     socket.on('updateData', (data) => {
@@ -60,6 +96,7 @@
 
     // Initial fetch
     async function fetchInitialData() {
+      await fetchCurrentUser(); // Fetch user data before fetching shared content
       try {
         const response = await fetch('/api/data');
         const data = await response.json();
@@ -86,16 +123,23 @@
         const headerDiv = document.createElement('div');
         headerDiv.className = 'header';
 
-        const timeP = document.createElement('p');
-        timeP.className = 'timestamp';
+        const infoP = document.createElement('p');
+        infoP.className = 'timestamp';
         const timestamp = new Date(item.timestamp).toLocaleString();
-        timeP.textContent = `Shared at: ${timestamp}`;
-        deleteBtn = document.createElement('button');
+        infoP.textContent = `Shared at: ${timestamp} by ${item.username}`;
+
+        const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-btn';
         deleteBtn.innerHTML = '<i class="fa fa-trash"></i> Delete';
         deleteBtn.addEventListener('click', () => deleteItem(item.id));
-        headerDiv.appendChild(timeP);
-        if(localStorage.admin=='true'){ headerDiv.appendChild(deleteBtn)};
+
+        // Only show delete button if the user is the owner or admin
+        if (currentUser && (item.userId === currentUser.userId || currentUser.isAdmin)) {
+          headerDiv.appendChild(infoP);
+          headerDiv.appendChild(deleteBtn);
+        } else {
+          headerDiv.appendChild(infoP);
+        }
 
         itemDiv.appendChild(headerDiv);
 
@@ -119,13 +163,7 @@
           img.src = item.content;
           img.alt = item.filename || 'Shared Image';
           img.className = 'shared-image';
-          const fileLink = document.createElement('a');
-          fileLink.href = item.content;
-          fileLink.download = item.filename || 'Shared File';
-          fileLink.innerHTML = `<i class="fa fa-file-download"></i> Download: ${item.filename || 'File'}`;
-          fileLink.className = 'file-link';
           itemDiv.appendChild(img);
-          itemDiv.appendChild(fileLink);
         } else if (item.type === 'file') {
           const fileLink = document.createElement('a');
           fileLink.href = item.content;
@@ -133,6 +171,19 @@
           fileLink.innerHTML = `<i class="fa fa-file-download"></i> Download: ${item.filename || 'File'}`;
           fileLink.className = 'file-link';
           itemDiv.appendChild(fileLink);
+        }
+
+        // Display tags if any
+        if (item.tags && item.tags.length > 0) {
+          const tagsDiv = document.createElement('div');
+          tagsDiv.className = 'tags';
+          item.tags.forEach(tag => {
+            const tagSpan = document.createElement('span');
+            tagSpan.className = 'tag';
+            tagSpan.textContent = tag;
+            tagsDiv.appendChild(tagSpan);
+          });
+          itemDiv.appendChild(tagsDiv);
         }
 
         container.appendChild(itemDiv);
@@ -229,7 +280,13 @@
       }
     });
 
-    window.onload = fetchInitialData;
+    // Fetch user data and initial content
+    async function initialize() {
+      await fetchCurrentUser();
+      await fetchInitialData();
+    }
+
+    initialize();
   </script>
 
   <!-- Initialize Highlight.js with Autodetection -->
